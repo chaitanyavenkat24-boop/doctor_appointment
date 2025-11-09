@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Calendar, Clock, Star } from 'lucide-react';
 import axios from 'axios';
@@ -23,7 +23,7 @@ const FindDoctors = () => {
     }
   };
 
-  const filterDoctors = () => {
+  const filterDoctors = useCallback(() => {
     let filtered = doctors;
 
     if (searchTerm) {
@@ -40,15 +40,16 @@ const FindDoctors = () => {
     }
 
     setFilteredDoctors(filtered);
-  };
+  }, [doctors, searchTerm, specialization]);
 
   useEffect(() => {
     fetchDoctors();
   }, []);
 
   useEffect(() => {
+    console.log('FindDoctors useEffect running, doctors length:', doctors.length, 'searchTerm:', searchTerm, 'specialization:', specialization);
     filterDoctors();
-  }, [doctors, searchTerm, specialization]);
+  }, [doctors, searchTerm, specialization, filterDoctors]);
 
   const handleBookAppointment = (doctorId) => {
     navigate(`/client/book-appointment/${doctorId}`);

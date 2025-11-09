@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Calendar, Clock, User, ArrowLeft } from "lucide-react";
@@ -18,7 +18,7 @@ const BookAppointment = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  const fetchDoctor = async () => {
+  const fetchDoctor = useCallback(async () => {
     try {
       const response = await axios.get(`/api/doctors/${doctorId}`);
       setDoctor(response.data);
@@ -28,11 +28,12 @@ const BookAppointment = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [doctorId]);
 
   useEffect(() => {
+    console.log('BookAppointment useEffect running, doctorId:', doctorId);
     fetchDoctor();
-  }, [doctorId]);
+  }, [doctorId, fetchDoctor]);
 
   const handleChange = (e) => {
     setFormData({
