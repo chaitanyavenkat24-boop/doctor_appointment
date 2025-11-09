@@ -36,12 +36,16 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     setError("");
+    console.log('Login form submitted from handleSubmit with:', { email: formData.email, password: '***' });
 
     const result = await login(formData.email, formData.password);
+    console.log('Login result:', result);
 
     if (result.success) {
+      console.log('Login successful, navigating to:', from);
       navigate(from, { replace: true });
     } else {
+      console.log('Login failed with message:', result.message);
       setError(result.message);
     }
 
@@ -51,6 +55,7 @@ const Login = () => {
   const handleDemoLogin = async (email, password) => {
     setLoading(true);
     setError("");
+    console.log('Demo login initiated for:', email);
 
     const result = await login(email, password);
 

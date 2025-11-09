@@ -77,9 +77,13 @@ router.post('/login', [
   body('email').isEmail().withMessage('Please include a valid email'),
   body('password').exists().withMessage('Password is required')
 ], async (req, res) => {
+  const requestId = req.body.requestId || `backend-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   try {
+    console.log(`[${requestId}] Login request received:`, { email: req.body.email, password: '***' });
+    console.log(`[${requestId}] Request headers:`, req.headers);
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log(`[${requestId}] Validation errors:`, errors.array());
       return res.status(400).json({ errors: errors.array() });
     }
 
@@ -87,13 +91,17 @@ router.post('/login', [
 
     // Check if user exists
     const user = await User.findOne({ email });
+    console.log(`[${requestId}] User found:`, user ? { id: user._id, email: user.email, role: user.role } : 'No user found');
     if (!user) {
+      console.log(`[${requestId}] No user found with email:`, email);
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
     // Check password
     const isMatch = await user.comparePassword(password);
+    console.log(`[${requestId}] Password match:`, isMatch);
     if (!isMatch) {
+      console.log(`[${requestId}] Password does not match for user:`, email);
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
@@ -104,8 +112,9 @@ router.post('/login', [
     };
 
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' });
+    console.log(`[${requestId}] JWT token generated successfully`);
 
-    res.json({
+    const responseData = {
       token,
       user: {
         id: user._id,
@@ -113,15 +122,18 @@ router.post('/login', [
         email: user.email,
         role: user.role,
         phone: user.phone,
-        ...(user.role === 'doctor' && { 
-          specialization: user.specialization, 
-          experience: user.experience, 
-          consultationFee: user.consultationFee 
+        ...(user.role === 'doctor' && {
+          specialization: user.specialization,
+          experience: user.experience,
+          consultationFee: user.consultationFee
         })
       }
-    });
+    };
+    console.log(`[${requestId}] Login successful, sending response`);
+    res.json(responseData);
   } catch (error) {
-    console.error(error.message);
+    console.error(`[${requestId}] Login error:`, error.message);
+    console.error(`[${requestId}] Error stack:`, error.stack);
     res.status(500).json({ message: 'Server error' });
   }
 });

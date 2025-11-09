@@ -6,7 +6,10 @@ require('dotenv').config();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true
+}));
 app.use(express.json());
 
 // Routes
@@ -16,7 +19,12 @@ app.use('/api/doctors', require('./routes/doctors'));
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ message: 'Server is running!' });
+  res.json({ message: 'Server is running!', timestamp: new Date().toISOString() });
+});
+
+// Test endpoint for debugging
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'Test endpoint working', headers: req.headers });
 });
 
 // Error handling middleware
